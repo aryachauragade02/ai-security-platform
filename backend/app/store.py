@@ -66,14 +66,12 @@ class SupabaseStore:
 
     def __init__(self, url: str, key: str) -> None:
         self.base = url.rstrip("/") + "/rest/v1"
-        self.client = httpx.Client(
-            timeout=15,
-            headers={
-                "apikey": key,
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json",
-            },
-        )
+        headers = {"apikey": key, "Content-Type": "application/json"}
+        # Legacy service_role keys are JWTs (start with "eyJ") and go in Authorization too.
+        # New-style keys (sb_secret_...) are not JWTs and must be sent in the apikey header only.
+        if key.startswith("eyJ"):
+            headers["Authorization"] = f"Bearer {key}"
+        self.client = httpx.Client(timeout=15, headers=headers)
 
     @staticmethod
     def _eq(eq: dict | None) -> dict:
