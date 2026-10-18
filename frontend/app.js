@@ -191,4 +191,21 @@ $("checkTool").addEventListener("click", async () => {
   }
 });
 
+// ---------- live updates ----------
+// Poll the backend every 2s for whichever tab is open, so requests from any client
+// (this page, curl, other apps using /v1/chat) appear without clicking Refresh.
+let liveTimer = null;
+function startLive() {
+  clearInterval(liveTimer);
+  liveTimer = setInterval(() => {
+    if (document.hidden) return;
+    const active = document.querySelector(".tabs button.active, nav button.active");
+    const tab = active && active.dataset.tab;
+    if (tab === "logs") loadLogs();
+    if (tab === "agents") loadCalls();
+    if (tab === "playground") loadStatus();
+  }, 2000);
+}
+startLive();
+
 loadStatus();
